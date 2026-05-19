@@ -29,6 +29,11 @@ export class RootController {
         return await this.subpageConfigService.getSubscriptionPageConfig(user.su, request);
     }
 
+    @Get('/')
+    async handleRoot(@Res() res: Response): Promise<void> {
+        return this.rootService.handleFailure(res);
+    }
+    
     @Get([':shortUuid', ':shortUuid/:clientType'])
     async root(
         @ClientIp() clientIp: string,
@@ -38,8 +43,7 @@ export class RootController {
         @Param('clientType') clientType: string,
     ) {
         if (request.path.startsWith('/assets') || request.path.startsWith('/locales')) {
-            response.socket?.destroy();
-            return;
+            return this.rootService.handleFailure(response);
         }
 
         if (clientType === undefined) {
@@ -53,9 +57,7 @@ export class RootController {
 
         if (!REQUEST_TEMPLATE_TYPE_VALUES.includes(clientType as TRequestTemplateTypeKeys)) {
             this.logger.error(`Invalid client type: ${clientType}`);
-
-            response.socket?.destroy();
-            return;
+            return this.rootService.handleFailure(response);
         } else {
             return await this.rootService.serveSubscriptionPage(
                 clientIp,
