@@ -52,8 +52,8 @@ jobs:
           platforms: linux/amd64, linux/arm64
           push: true
           tags: |
-            remnawave/subscription-page:latest
-            remnawave/subscription-page:${{github.ref_name}}
+            buddymurdock/subscription-page:latest
+            buddymurdock/subscription-page:${{github.ref_name}}
 
   notify-on-error:
     runs-on: ubuntu-latest
