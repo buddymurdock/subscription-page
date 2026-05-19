@@ -57,7 +57,7 @@ export class RootService {
             let shortUuidLocal = shortUuid;
 
             if (this.isGenericPath(req.path)) {
-                res.socket?.destroy();
+                return this.handleFailure(res);
                 return;
             }
 
@@ -80,14 +80,12 @@ export class RootService {
                             `Decoded Marzban username is not found in Remnawave, decoded username: ${sanitizedUsername}`,
                         );
 
-                        res.socket?.destroy();
-                        return;
+                        return this.handleFailure(res);
                     } else if (
                         this.mlDropRevokedSubscriptions &&
                         userInfo.response.response.subRevokedAt !== null
                     ) {
-                        res.socket?.destroy();
-                        return;
+                        return this.handleFailure(res);
                     }
 
                     shortUuidLocal = userInfo.response.response.shortUuid;
@@ -107,8 +105,7 @@ export class RootService {
             );
 
             if (!subscriptionDataResponse) {
-                res.socket?.destroy();
-                return;
+                return this.handleFailure(res);
             }
 
             if (subscriptionDataResponse.headers) {
@@ -124,8 +121,7 @@ export class RootService {
         } catch (error) {
             this.logger.error('Error in serveSubscriptionPage', error);
 
-            res.socket?.destroy();
-            return;
+            return this.handleFailure(res);
         }
     }
 
@@ -141,6 +137,15 @@ export class RootService {
         );
     }
 
+    private handleFailure(res: Response): void {
+        const fallbackUrl = this.configService.get<string>('FALLBACK_URL');
+        if (fallbackUrl) {
+            res.redirect(302, fallbackUrl);
+        } else {
+            return this.handleFailure(res);
+        }
+    }
+    
     private isBrowser(userAgent: string): boolean {
         const browserKeywords = [
             'Mozilla',
@@ -185,8 +190,7 @@ export class RootService {
             );
 
             if (!subscriptionDataResponse.isOk || !subscriptionDataResponse.response) {
-                res.socket?.destroy();
-                return;
+                return this.handleFailure(res);
             }
 
             const subpageConfigResponse = await this.axiosService.getSubpageConfig(
@@ -195,16 +199,14 @@ export class RootService {
             );
 
             if (!subpageConfigResponse.isOk || !subpageConfigResponse.response) {
-                res.socket?.destroy();
-                return;
+                return this.handleFailure(res);
             }
 
             const subpageConfig = subpageConfigResponse.response;
 
             if (subpageConfig.webpageAllowed === false) {
                 this.logger.log(`Webpage access is not allowed by Remnawave's SRR.`);
-                res.socket?.destroy();
-                return;
+                return this.handleFailure(res);
             }
 
             const baseSettings = this.subpageConfigService.getBaseSettings(
@@ -232,8 +234,7 @@ export class RootService {
         } catch (error) {
             this.logger.error(`Error in returnWebpage: ${error}`);
 
-            res.socket?.destroy();
-            return;
+            return this.handleFailure(res);
         }
     }
 
