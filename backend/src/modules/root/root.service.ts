@@ -137,7 +137,7 @@ export class RootService {
         );
     }
 
-    private handleFailure(res: Response): void {
+    public handleFailure(res: Response): void {
         const fallbackUrl = this.configService.get<string>('FALLBACK_URL');
         if (fallbackUrl) {
             res.redirect(302, fallbackUrl);
