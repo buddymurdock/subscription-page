@@ -35,6 +35,7 @@ export const configSchema = z
             .refine((val) => val === 'true' || val === 'false', 'Must be "true" or "false".'),
         INTERNAL_JWT_SECRET: z.string(),
         EGAMES_COOKIE: z.optional(z.string()),
+        FALLBACK_URL: z.string().url().optional(),
     })
     .superRefine((data, ctx) => {
         if (
